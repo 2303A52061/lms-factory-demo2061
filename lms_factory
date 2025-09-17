@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LMS Factory Method Demo</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:#0b1220;color:#e6eef6}
+    .wrap{max-width:1000px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;gap:12px}
+    h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:320px 1fr;gap:16px;margin-top:16px}
+    .card{background:#071024;padding:14px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.6)}
+    input,select,button,textarea{font:inherit}
+    .btn{background:#06b6d4;border:none;color:#022;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#94a3b8;padding:6px 8px;border-radius:8px;cursor:pointer}
+    .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .book{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+    .meta{display:flex;flex-direction:column}
+    .muted{color:#94a3b8;font-size:13px}
+    .small{font-size:13px;color:#94a3b8}
+    footer{margin-top:14px;color:#94a3b8}
+    @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#7dd3fc);display:flex;align-items:center;justify-content:center;color:#022;font-weight:700">L</div>
+      <div>
+        <h1>Library Management System — Factory Method Demo</h1>
+        <div class="muted">Factory creates Student / Librarian objects. Demo app (local only).</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT PANEL -->
+      <aside class="card">
+        <div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="roleSelect">
+              <option value="student">Student</option>
+              <option value="librarian">Librarian</option>
+            </select>
+            <input id="userName" placeholder="Enter name (e.g., Alice)" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit"/>
+            <button id="loginBtn" class="btn">Login</button>
+          </div>
+
+          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+
+          <div class="small">Search</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="searchInput" placeholder="title / author / isbn" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/>
+            <button id="searchBtn" class="btn">Search</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="small">Notifications</div>
+            <div id="notifications" class="muted" style="margin-top:6px">(login to see your reminders)</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="small">Librarian: Add Book</div>
+            <div id="addBookPanel" style="display:none;margin-top:8px">
+              <input id="bkTitle" placeholder="Title" style="width:100%;padding:8px;border-radius:6px;margin-bottom:6px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/>
+              <input id="bkAuthor" placeholder="Author" style="width:100%;padding:8px;border-radius:6px;margin-bottom:6px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/>
+              <input id="bkIsbn" placeholder="ISBN" style="width:100%;padding:8px;border-radius:6px;margin-bottom:6px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/>
+              <input id="bkCopies" type="number" min="1" value="1" style="width:100%;padding:8px;border-radius:6px;margin-bottom:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/>
+              <div style="display:flex;gap:8px"><button id="addBookBtn" class="btn">Add</button><button id="clearBtn" class="secondary">Clear</button></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <button id="resetBtn" class="secondary">Reset Sample Data</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT PANEL -->
+      <main>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small" style="font-weight:700">Catalog</div>
+              <div class="muted">search, borrow and return books</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">User: <span id="curUser">(not logged in)</span></div>
+              <div class="small muted">Role: <span id="curRole">-</span></div>
+            </div>
+          </div>
+
+          <div id="bookList" class="list" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="small" style="font-weight:700">My Borrow Records</div>
+          <div id="borrowRecords" class="muted" style="margin-top:8px">(login as student to see borrows)</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="small" style="font-weight:700">Admin View (Librarian)</div>
+          <div id="adminView" class="muted" style="margin-top:8px">(login as librarian to see reports)</div>
+        </div>
+
+        <footer class="muted">Demo: local-only. Due date default 14 days. Fine ₹5/day.</footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+  /***********************
+   * Factory Method Pattern: JS implementation
+   ***********************/
+  class User {
+    constructor(id, name){ this.id=id; this.name=name; }
+    getRole(){ throw new Error('Abstract method'); }
+  }
+
+  class Student extends User {
+    getRole(){ return 'Student'; }
+    // student actions could be added here
+  }
+
+  class Librarian extends User {
+    getRole(){ return 'Librarian'; }
+    // librarian actions...
+  }
+
+  class UserFactory {
+    static create(type, id, name){
+      if(!type) throw new Error('type required');
+      const t = type.toLowerCase();
+      if(t === 'student') return new Student(id, name);
+      if(t === 'librarian') return new Librarian(id, name);
+      throw new Error('Unknown user type');
+    }
+  }
+
+  /***********************
+   * Simple LMS data + helpers (localStorage)
+   ***********************/
+  const STORAGE_KEY = 'lms_factory_demo_v1';
+  const FINE_PER_DAY = 5;
+  const DUE_DAYS = 14;
+
+  const SAMPLE = {
+    users:[
+      {id:1,name:'Alice',isLibrarian:false},
+      {id:2,name:'Bob',isLibrarian:false},
+      {id:3,name:'Librarian',isLibrarian:true}
+    ],
+    books:[
+      {id:1,title:'The Hobbit',author:'J.R.R. Tolkien',isbn:'978-0618968633',copies:3,total:3},
+      {id:2,title:'1984',author:'George Orwell',isbn:'978-0451524935',copies:2,total:2},
+      {id:3,title:'Clean Code',author:'Robert C. Martin',isbn:'978-0132350884',copies:1,total:1},
+    ],
+    borrows:[] // {id,userId,bookId,issueIso,dueIso,returnIso|null,finePaid:false,fineAmount:0}
+  };
+
+  function loadState(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw){ localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE)); return JSON.parse(JSON.stringify(SAMPLE)); } return JSON.parse(raw);}catch(e){localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE)); return JSON.parse(JSON.stringify(SAMPLE)); } }
+  function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+  let state = loadState();
+  let currentUserObj = null; // JS object created by factory
+
+  // DOM refs
+  const bookListEl = document.getElementById('bookList');
+  const borrowRecordsEl = document.getElementById('borrowRecords');
+  const adminViewEl = document.getElementById('adminView');
+  const notificationsEl = document.getElementById('notifications');
+  const curUserEl = document.getElementById('curUser');
+  const curRoleEl = document.getElementById('curRole');
+  const addBookPanel = document.getElementById('addBookPanel');
+
+  // Utils
+  const uid = ()=> Math.floor(Math.random()*1e9);
+  const nowIso = ()=> new Date().toISOString();
+  const dateOnly = iso => new Date(iso).toLocaleDateString();
+
+  // Render functions
+  function renderBooks(filter=''){
+    bookListEl.innerHTML = '';
+    const q = String(filter || '').trim().toLowerCase();
+    const books = state.books.filter(b=>!q || b.title.toLowerCase().includes(q) || (b.author||'').toLowerCase().includes(q) || (b.isbn||'').toLowerCase().includes(q));
+    if(books.length===0){ bookListEl.innerHTML = '<div class="muted">No books found.</div>'; return; }
+    books.forEach(b=>{
+      const bookDiv = document.createElement('div'); bookDiv.className='book';
+      const left = document.createElement('div'); left.className='meta';
+      left.innerHTML = `<div><strong>${escapeHtml(b.title)}</strong></div><div class="small muted">${escapeHtml(b.author)} • ISBN: ${escapeHtml(b.isbn)}</div>`;
+      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; right.style.alignItems='center';
+      const avail = document.createElement('div'); avail.className='small'; avail.textContent = `${b.copies} / ${b.total} available`;
+      right.appendChild(avail);
+
+      const borrowBtn = document.createElement('button'); borrowBtn.className='btn'; borrowBtn.textContent='Borrow';
+      borrowBtn.onclick = ()=> handleBorrow(b.id);
+      borrowBtn.disabled = b.copies<=0 || !currentUserObj || currentUserObj.getRole()!=='Student';
+      right.appendChild(borrowBtn);
+
+      const detailsBtn = document.createElement('button'); detailsBtn.className='secondary'; detailsBtn.textContent='Details';
+      detailsBtn.onclick = ()=> alert(`${b.title}\nAuthor: ${b.author}\nISBN: ${b.isbn}\nCopies: ${b.copies}/${b.total}`);
+      right.appendChild(detailsBtn);
+
+      bookDiv.appendChild(left); bookDiv.appendChild(right);
+      bookListEl.appendChild(bookDiv);
+    });
+  }
+
+  function renderBorrowRecords(){
+    if(!currentUserObj || currentUserObj.getRole()!=='Student'){ borrowRecordsEl.innerHTML='(login as a Student to view borrows)'; return; }
+    const recs = state.borrows.filter(b=>b.userId===currentUserObj.id);
+    if(recs.length===0){ borrowRecordsEl.innerHTML='No borrow records.'; return; }
+    borrowRecordsEl.innerHTML = '';
+    recs.forEach(r=>{
+      const bk = state.books.find(x=>x.id===r.bookId);
+      const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.style.alignItems='center'; div.style.padding='8px 0';
+      const left = document.createElement('div'); left.innerHTML = `<strong>${escapeHtml(bk.title)}</strong><div class="small muted">Issued: ${dateOnly(r.issueIso)} • Due: ${dateOnly(r.dueIso)} • Returned: ${r.returnIso?dateOnly(r.returnIso):'---'}</div>`;
+      const right = document.createElement('div');
+      if(!r.returnIso){
+        const retBtn = document.createElement('button'); retBtn.className='btn'; retBtn.textContent='Return';
+        retBtn.onclick = ()=> handleReturn(r.id);
+        right.appendChild(retBtn);
+      } else {
+        right.innerHTML = `<div class="small">Fine: ${r.fineAmount} • Paid: ${r.finePaid? 'Yes':'No'}</div>`;
+        if(r.fineAmount>0 && !r.finePaid){
+          const pay = document.createElement('button'); pay.className='btn'; pay.textContent='Pay Fine';
+          pay.onclick = ()=> { r.finePaid=true; saveState(state); renderAll(); alert('Fine marked as paid'); }
+          right.appendChild(pay);
+        }
+      }
+      div.appendChild(left); div.appendChild(right);
+      borrowRecordsEl.appendChild(div);
+    });
+  }
+
+  function renderAdmin(){
+    if(!currentUserObj || currentUserObj.getRole()!=='Librarian'){ adminViewEl.innerHTML='(login as Librarian to view reports)'; return; }
+    let html = '<div style="font-weight:700;margin-bottom:8px">All Borrow Records</div>';
+    if(state.borrows.length===0) html += '<div class="muted">No records</div>';
+    else {
+      html += '<table style="width:100%"><thead><tr><th>BorrowID</th><th>User</th><th>Book</th><th>Issued</th><th>Due</th><th>Returned</th><th>Fine</th></tr></thead><tbody>';
+      state.borrows.forEach(r=>{
+        const user = state.users.find(u=>u.id===r.userId);
+        const bk = state.books.find(b=>b.id===r.bookId);
+        html += `<tr><td>${r.id}</td><td>${escapeHtml(user.name)}</td><td>${escapeHtml(bk.title)}</td><td>${dateOnly(r.issueIso)}</td><td>${dateOnly(r.dueIso)}</td><td>${r.returnIso?dateOnly(r.returnIso):'---'}</td><td>${r.fineAmount} ${r.finePaid? '(paid)':''}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    }
+    adminViewEl.innerHTML = html;
+  }
+
+  function renderNotifications(){
+    if(!currentUserObj){ notificationsEl.textContent = '(login to see reminders)'; return; }
+    const now = new Date();
+    const msgs = [];
+    state.borrows.filter(b=>!b.returnIso && b.userId===currentUserObj.id).forEach(b=>{
+      const due = new Date(b.dueIso);
+      const diffDays = Math.ceil((due - now)/(1000*60*60*24));
+      if(diffDays < 0) msgs.push(`Overdue: "${getBookTitle(b.bookId)}" was due on ${dateOnly(b.dueIso)}`);
+      else if(diffDays <=2) msgs.push(`Reminder: "${getBookTitle(b.bookId)}" is due on ${dateOnly(b.dueIso)}`);
+    });
+    notificationsEl.textContent = msgs.length? msgs.join(' • ') : 'No notifications';
+  }
+
+  function renderAll(filter=''){
+    renderBooks(filter);
+    renderBorrowRecords();
+    renderAdmin();
+    renderNotifications();
+    curUserEl.textContent = currentUserObj? currentUserObj.name : '(not logged in)';
+    curRoleEl.textContent = currentUserObj? currentUserObj.getRole() : '-';
+    addBookPanel.style.display = (currentUserObj && currentUserObj.getRole()==='Librarian')? 'block':'none';
+  }
+
+  // Helpers
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function getBookTitle(bookId){ const b=state.books.find(x=>x.id===bookId); return b?b.title:'unknown'; }
+
+  // Actions: Borrow / Return / Add book / Login / Reset
+  function handleBorrow(bookId){
+    if(!currentUserObj || currentUserObj.getRole()!=='Student'){ alert('Login as Student to borrow'); return; }
+    const book = state.books.find(b=>b.id===bookId);
+    if(!book) return alert('Book not found');
+    if(book.copies<=0) return alert('No copies available');
+    const issueIso = nowIso();
+    const dueDate = new Date(); dueDate.setDate(dueDate.getDate()+DUE_DAYS);
+    const dueIso = dueDate.toISOString();
+    const borrowRecord = { id: uid(), userId: currentUserObj.id, bookId: book.id, issueIso, dueIso, returnIso: null, finePaid: false, fineAmount: 0 };
+    state.borrows.push(borrowRecord);
+    book.copies -= 1;
+    saveState(state);
+    renderAll(document.getElementById('searchInput').value);
+    alert(`Borrowed "${book.title}". Due on ${dateOnly(dueIso)}`);
+  }
+
+  function handleReturn(borrowId){
+    const rec = state.borrows.find(r=>r.id===borrowId);
+    if(!rec) return alert('Borrow record not found');
+    if(rec.returnIso) return alert('Already returned');
+    const returnIso = nowIso();
+    const due = new Date(rec.dueIso);
+    const ret = new Date(returnIso);
+    const overdueDays = Math.max(0, Math.ceil((ret - due)/(1000*60*60*24)));
+    const fine = overdueDays * FINE_PER_DAY;
+    rec.returnIso = returnIso;
+    rec.fineAmount = fine;
+    rec.finePaid = (fine===0);
+    const book = state.books.find(b=>b.id===rec.bookId);
+    if(book) book.copies += 1;
+    saveState(state);
+    renderAll(document.getElementById('searchInput').value);
+    if(fine>0) alert(`Returned with fine ₹${fine} (${overdueDays} days overdue). Pay via "Pay Fine" in records.`); else alert('Returned on time. No fine.');
+  }
+
+  // UI wiring
+  document.getElementById('loginBtn').addEventListener('click', ()=>{
+    const name = (document.getElementById('userName').value || '').trim();
+    const role = document.getElementById('roleSelect').value;
+    if(!name) return alert('Enter a name');
+    // find existing user by name (case-insensitive), else create new
+    const existing = state.users.find(u=>u.name.toLowerCase()===name.toLowerCase());
+    let user;
+    if(existing){
+      user = existing;
+      // if role mismatch, update isLibrarian flag only if it makes sense
+      if(role==='librarian') user.isLibrarian = true;
+    } else {
+      const newId = state.users.length? Math.max(...state.users.map(u=>u.id))+1 : 1;
+      user = {id:newId, name, isLibrarian: role==='librarian'};
+      state.users.push(user); saveState(state);
+    }
+    currentUserObj = UserFactory.create(role, user.id, user.name);
+    renderAll(document.getElementById('searchInput').value);
+    alert(`Logged in as ${user.name} (${currentUserObj.getRole()})`);
+  });
+
+  document.getElementById('searchBtn').addEventListener('click', ()=> renderAll(document.getElementById('searchInput').value));
+  document.getElementById('searchInput').addEventListener('keyup', (e)=> { if(e.key==='Enter') renderAll(document.getElementById('searchInput').value); });
+
+  document.getElementById('addBookBtn').addEventListener('click', ()=>{
+    if(!currentUserObj || currentUserObj.getRole()!=='Librarian') return alert('Login as Librarian to add books');
+    const title = document.getElementById('bkTitle').value.trim();
+    const author = document.getElementById('bkAuthor').value.trim();
+    const isbn = document.getElementById('bkIsbn').value.trim();
+    let copies = parseInt(document.getElementById('bkCopies').value,10);
+    if(!copies || copies<1) copies=1;
+    if(!title) return alert('Title required');
+    const newId = state.books.length? Math.max(...state.books.map(b=>b.id))+1 : 1;
+    state.books.push({id:newId,title,author,isbn,copies,total:copies});
+    saveState(state); renderAll();
+    alert('Book added');
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    document.getElementById('bkTitle').value=''; document.getElementById('bkAuthor').value=''; document.getElementById('bkIsbn').value=''; document.getElementById('bkCopies').value='1';
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Reset app sample data?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = loadState();
+    currentUserObj = null;
+    document.getElementById('userName').value='';
+    renderAll();
+  });
+
+  // make borrow buttons dynamic with event delegation (re-render will recreate)
+  // initial render
+  renderAll();
+
+  // Periodic notification update
+  setInterval(()=> renderNotifications(), 10_000);
+
+  </script>
+</body>
+</html>
